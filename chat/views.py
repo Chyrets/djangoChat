@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
@@ -41,7 +42,7 @@ class ChatView(LoginRequiredMixin, View):
     template_name = 'chat/direct.html'
 
     def get(self, request, pk, *args, **kwargs):
-        messages = Message.objects.filter(chat_id=pk, chat__members=request.user)
+        messages = Message.objects.filter(chat_id=pk, chat__members=request.user, deleted=False)
 
         form = self.form_class()
 
@@ -52,7 +53,7 @@ class ChatView(LoginRequiredMixin, View):
 
         return render(request, self.template_name, context)
 
-    def post(self, request, pk):
+    def post(self, request, pk, *args, **kwargs):
         form = self.form_class(request.POST)
         if form.is_valid():
             message = form.save(commit=False)
@@ -61,3 +62,19 @@ class ChatView(LoginRequiredMixin, View):
             message.save()
 
         return redirect(reverse('chat', args=pk))
+
+
+class DeleteMessage(LoginRequiredMixin, View):
+    """
+    Display page with choices how to delete message
+    """
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    def post(self, request, message_id, *args, **kwargs):
+        message = Message.objects.get(id=message_id)
+        if request.method == 'POST':
+            message.deleted = True
+            message.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

@@ -20,9 +20,10 @@ class Message(models.Model):
     """
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='author')
-    message = models.TextField(max_length=420)
+    message = models.TextField(max_length=420, null=True)
     date = models.DateTimeField(auto_now_add=True)
     unread = models.BooleanField(default=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['date']

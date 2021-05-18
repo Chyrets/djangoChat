@@ -12,7 +12,14 @@
 
     <div>
         {% for message in messages %}
-            {{ message.message }} - {{ message.date }}
+            <p><strong>{{ message.message }}</strong></p>
+            <p><small>{{ message.date }}</small></p>
+            <p>
+            <form action="{% url 'delete' message.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+            </p>
             <hr>
         {% endfor %}
     </div>
@@ -20,7 +27,7 @@
         <form action="" method="post">
             {% csrf_token %}
             {{ form }}
-            <button type="submit" >send</button>
+            <button type="submit">send</button>
         </form>
     </div>
 
