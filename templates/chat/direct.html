@@ -1,36 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<div>
-    {{ request.user }}
-    <br>
-    chat with: {{ username }}
-</div>
+{% block content %}
 
-<hr>
-<br><br>
+    <div>
+        {{ request.user }}
+        <br>
+    </div>
 
-<div>
-    {% for message in messages %}
-        {{ message.body }} - {{ message.date }}
-        <hr>
-    {% endfor %}
-</div>
+    <hr>
+    <br><br>
 
-<div>
-    <form action="{% url 'send' username %}" method="POST">
-        {% csrf_token %}
-        <label>
-            <textarea name="body"></textarea>
-        </label>
-        <button type="submit">Send</button>
-    </form>
-</div>
+    <div>
+        {% for message in messages %}
+            {{ message.message }} - {{ message.date }}
+            <hr>
+        {% endfor %}
+    </div>
+    <div>
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit" >send</button>
+        </form>
+    </div>
 
-</body>
-</html>
+{% endblock %}

@@ -1,53 +1,53 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
-from django.http import HttpResponseBadRequest
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import View
 
-from chat.models import Message
+from chat.forms import MessageForm
+from chat.models import Message, Chat
 
 
 class DirectView(LoginRequiredMixin, View):
     """
     Main page with all directs
     """
+    template_name = 'base.html'
 
     def get(self, request, *args, **kwargs):
-        return render(request, 'chat/base.html', {})
+        chats = Chat.objects.filter(members=request.user)
+
+        context = {
+            'chats': chats,
+        }
+
+        return render(request, self.template_name, context)
 
 
-class GetMessageView(LoginRequiredMixin, View):
+class ChatView(LoginRequiredMixin, View):
     """
-    Display message from some user
+    Display chat with some user
     """
+    form_class = MessageForm
+    template_name = 'chat/direct.html'
 
-    def get(self, request, username, *args, **kwargs):
-        messages_from = Message.objects.filter(recipient=request.user, sender__username=username)
-        message_to = Message.objects.filter(recipient__username=username, sender=request.user)
-        messages = message_to.union(messages_from, all=True).order_by('date')
+    def get(self, request, pk, *args, **kwargs):
+        messages = Message.objects.filter(chat_id=pk, chat__members=request.user)
+
+        form = self.form_class()
 
         context = {
             'messages': messages,
-            'username': username,
+            'form': form
         }
 
-        return render(request, 'chat/direct.html', context)
+        return render(request, self.template_name, context)
 
+    def post(self, request, pk):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.chat_id = pk
+            message.author = request.user
+            message.save()
 
-class SendMessageView(LoginRequiredMixin, View):
-    """
-    Display form for sending message
-    """
-
-    def get(self, request, *args, **kwargs):
-        return HttpResponseBadRequest()
-
-    def post(self, request, username, *args, **kwargs):
-        from_user = request.user
-        to_user = User.objects.get(username=username)
-        body = request.POST.get('body')
-
-        send_message = Message(sender=from_user, recipient=to_user, body=body)
-        send_message.save()
-
-        return redirect('direct', username)
+        return redirect(reverse('chat', args=pk))
