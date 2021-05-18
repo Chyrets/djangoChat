@@ -34,16 +34,18 @@
 <section>
     <div class="container">
         {% block content %}
-            {% for chat in chats %}
-                <a href="{% url 'chat' chat.id %}">
-                    {% for user in chat.members.all %}
+            {% for message in messages %}
+                <a href="{% url 'chat' message.chat.id %}">
+                    {% for user in message.chat.members.all %}
                         {% if user != request.user %}
-                            {{ user }}
-                            <br>
+                            <p>User: {{ user }}</p>
+                            <p>Last message: {{ message }} {{ message.date }}</p>
+                            <hr>
                         {% endif %}
                     {% endfor %}
                 </a>
             {% endfor %}
+
 
         {% endblock %}
     </div>

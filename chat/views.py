@@ -16,8 +16,18 @@ class DirectView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         chats = Chat.objects.filter(members=request.user)
 
+        messages = []
+        for chat in chats:
+            try:
+                messages.append(Message.objects.filter(chat=chat).latest('date'))
+            except Message.DoesNotExist:
+                continue
+
+        messages = sorted(messages, key=lambda message: message.date, reverse=True)
+
         context = {
             'chats': chats,
+            'messages': messages
         }
 
         return render(request, self.template_name, context)
