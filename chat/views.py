@@ -63,6 +63,8 @@ class ChatView(LoginRequiredMixin, View):
             message = form.save(commit=False)
             message.chat_id = pk
             message.author = request.user
+            if request.POST.get('parent', None):
+                message.parent_id = int(request.POST.get('parent'))
             message.save()
 
         return redirect(reverse('chat', args=pk))
@@ -108,3 +110,4 @@ class ChangeMessage(LoginRequiredMixin, View):
             message.save()
 
         return redirect('chat', pk=message.chat_id)
+
