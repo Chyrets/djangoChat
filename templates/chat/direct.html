@@ -15,9 +15,13 @@
             <p><strong>{{ message.message }}</strong></p>
             <p><small>{{ message.date }}</small></p>
             <p>
-            <form action="{% url 'delete' message.pk %}" method="post">
+            <form action="{% url 'delete' message.pk 0 %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Delete</button>
+                <button type="submit">Delete for you</button>
+            </form>
+            <form action="{% url 'delete' message.pk 1 %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Delete for everyone</button>
             </form>
             </p>
             <hr>

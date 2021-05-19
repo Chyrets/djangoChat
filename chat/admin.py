@@ -7,4 +7,4 @@ admin.site.register(Chat)
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('message', 'deleted')
+    list_display = ('message', 'deleted', 'deleted_for_user')

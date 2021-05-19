@@ -20,7 +20,10 @@ class DirectView(LoginRequiredMixin, View):
         messages = []
         for chat in chats:
             try:
-                messages.append(Message.objects.filter(chat=chat).latest('date'))
+                messages.append(
+                    Message.objects.filter(
+                        chat=chat, deleted=False
+                    ).exclude(deleted_for_user=request.user).latest('date'))
             except Message.DoesNotExist:
                 continue
 
@@ -42,7 +45,8 @@ class ChatView(LoginRequiredMixin, View):
     template_name = 'chat/direct.html'
 
     def get(self, request, pk, *args, **kwargs):
-        messages = Message.objects.filter(chat_id=pk, chat__members=request.user, deleted=False)
+        user = request.user
+        messages = Message.objects.filter(chat_id=pk, chat__members=user, deleted=False).exclude(deleted_for_user=user)
 
         form = self.form_class()
 
@@ -72,9 +76,14 @@ class DeleteMessage(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-    def post(self, request, message_id, *args, **kwargs):
+    def post(self, request, option, message_id, *args, **kwargs):
         message = Message.objects.get(id=message_id)
+
         if request.method == 'POST':
-            message.deleted = True
-            message.save()
+            if int(option) == 0:
+                message.deleted_for_user = request.user
+                message.save()
+            else:
+                message.deleted = True
+                message.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

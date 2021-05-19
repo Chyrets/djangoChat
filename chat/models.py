@@ -24,6 +24,7 @@ class Message(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     unread = models.BooleanField(default=True)
     deleted = models.BooleanField(default=False)
+    deleted_for_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ['date']
