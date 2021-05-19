@@ -26,6 +26,7 @@ class Message(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_for_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     changed = models.BooleanField(default=False)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, related_name='message_parent', null=True, blank=True)
 
     class Meta:
         ordering = ['date']

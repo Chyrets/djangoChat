@@ -12,13 +12,19 @@
 
     <div>
         {% for message in messages %}
+            {% if message.parent %}
+                Forward message: {{ message.parent }}
+            {% endif %}
             <p><strong>{{ message.message }}</strong></p>
-            <p><small>{{ message.date }}</small></p>
+            <p><small> {{ message.author }} - {{ message.date }}</small></p>
             <p>
                 {% if message.changed == True %}
                     <small>changed</small>
                 {% endif %}
             </p>
+            <a href="#formReview" onclick="Forward('{{ message.id }}')">
+                Forward
+            </a>
             <p>
                 {% if message.author == request.user %}
                     <a href="{% url 'change' message.pk %}">Change</a>
@@ -36,11 +42,17 @@
         {% endfor %}
     </div>
     <div>
-        <form action="" method="post">
+        <form action="" method="post" id="formReview">
             {% csrf_token %}
+            <input type="hidden" name="parent" id="contactparent" value="">
             {{ form }}
             <button type="submit">send</button>
         </form>
     </div>
+    <script>
+        function Forward(id) {
+            document.getElementById("contactparent").value = id;
+        }
+    </script>
 
 {% endblock %}
