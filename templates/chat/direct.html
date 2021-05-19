@@ -15,6 +15,14 @@
             <p><strong>{{ message.message }}</strong></p>
             <p><small>{{ message.date }}</small></p>
             <p>
+                {% if message.changed == True %}
+                    <small>changed</small>
+                {% endif %}
+            </p>
+            <p>
+                {% if message.author == request.user %}
+                    <a href="{% url 'change' message.pk %}">Change</a>
+                {% endif %}
             <form action="{% url 'delete' message.pk 0 %}" method="post">
                 {% csrf_token %}
                 <button type="submit">Delete for you</button>

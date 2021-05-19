@@ -70,7 +70,7 @@ class ChatView(LoginRequiredMixin, View):
 
 class DeleteMessage(LoginRequiredMixin, View):
     """
-    Display page with choices how to delete message
+    Display buttons for deleting message
     """
 
     def get(self, request, *args, **kwargs):
@@ -79,11 +79,32 @@ class DeleteMessage(LoginRequiredMixin, View):
     def post(self, request, option, message_id, *args, **kwargs):
         message = Message.objects.get(id=message_id)
 
-        if request.method == 'POST':
-            if int(option) == 0:
-                message.deleted_for_user = request.user
-                message.save()
-            else:
-                message.deleted = True
-                message.save()
+        if int(option) == 0:
+            message.deleted_for_user = request.user
+            message.save()
+        else:
+            message.deleted = True
+            message.save()
+
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class ChangeMessage(LoginRequiredMixin, View):
+    """
+    Display page for change message
+    """
+
+    def get(self, request, message_id, *args, **kwargs):
+        message = Message.objects.get(id=message_id, author=request.user)
+        return render(request, 'chat/change_message.html', {'message': message})
+
+    def post(self, request, message_id, *args, **kwargs):
+        message = Message.objects.get(id=message_id, author=request.user)
+        form = MessageForm(request.POST)
+
+        if form.is_valid():
+            message.message = form.cleaned_data.get('message')
+            message.changed = True
+            message.save()
+
+        return redirect('chat', pk=message.chat_id)
