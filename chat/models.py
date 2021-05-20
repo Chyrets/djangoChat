@@ -6,9 +6,11 @@ class Chat(models.Model):
     """
     Chat rom for user
     """
+    DIALOG = 'D'
+    CHAT = 'C'
     CHAT_TYPE_CHOICES = (
-        ('D', 'DIALOG'),
-        ('C', 'CHAT')
+        (DIALOG, 'DIALOG'),
+        (CHAT, 'CHAT')
     )
     type = models.CharField(max_length=1, choices=CHAT_TYPE_CHOICES)
     members = models.ManyToManyField(User)

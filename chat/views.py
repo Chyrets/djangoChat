@@ -48,7 +48,11 @@ class ChatView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         user = request.user
         messages = Message.objects.filter(chat_id=pk, chat__members=user, deleted=False).exclude(deleted_for_user=user)
-        messages.update(unread=False)
+
+        for message in messages:
+            if message.author != user:
+                message.unread = False
+                message.save()
 
         form = self.form_class()
 
@@ -113,3 +117,18 @@ class ChangeMessage(LoginRequiredMixin, View):
 
         return redirect('chat', pk=message.chat_id)
 
+
+class StartChat(LoginRequiredMixin, View):
+    """
+    Start chat with some user
+    """
+
+    def get(self, request, user_id):
+        chat = Chat.objects.filter(members__in=[request.user.pk, int(user_id)], type=Chat.DIALOG).annotate(c=Count('members')).filter(c=2)
+        if chat.count() == 0:
+            chat = Chat.objects.create()
+            chat.members.add(request.user)
+            chat.members.add(user_id)
+        else:
+            chat = chat.first()
+        return redirect('chat', chat.pk)
