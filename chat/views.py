@@ -112,3 +112,4 @@ class ChangeMessage(LoginRequiredMixin, View):
             message.save()
 
         return redirect('chat', pk=message.chat_id)
+
