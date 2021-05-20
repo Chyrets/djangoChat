@@ -13,7 +13,7 @@
     <div>
         {% for message in messages %}
             {% if message.parent %}
-                Forward message: {{ message.parent }}
+                Replied to: {{ message.parent }}
             {% endif %}
             <p><strong>{{ message.message }}</strong></p>
             <p><small> {{ message.author }} - {{ message.date }}</small></p>
@@ -22,8 +22,8 @@
                     <small>changed</small>
                 {% endif %}
             </p>
-            <a href="#formReview" onclick="Forward('{{ message.id }}')">
-                Forward
+            <a href="#formMessage" onclick="Reply('{{ message.id }}')">
+                Reply
             </a>
             <p>
                 {% if message.author == request.user %}
@@ -42,7 +42,7 @@
         {% endfor %}
     </div>
     <div>
-        <form action="" method="post" id="formReview">
+        <form action="" method="post" id="formMessage">
             {% csrf_token %}
             <input type="hidden" name="parent" id="contactparent" value="">
             {{ form }}
@@ -50,7 +50,7 @@
         </form>
     </div>
     <script>
-        function Forward(id) {
+        function Reply(id) {
             document.getElementById("contactparent").value = id;
         }
     </script>

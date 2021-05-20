@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -23,7 +24,7 @@ class DirectView(LoginRequiredMixin, View):
                 messages.append(
                     Message.objects.filter(
                         chat=chat, deleted=False
-                    ).exclude(deleted_for_user=request.user).latest('date'))
+                    ).exclude(deleted_for_user=request.user).annotate(Count('unread')).latest('date'))
             except Message.DoesNotExist:
                 continue
 
@@ -47,6 +48,7 @@ class ChatView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         user = request.user
         messages = Message.objects.filter(chat_id=pk, chat__members=user, deleted=False).exclude(deleted_for_user=user)
+        messages.update(unread=False)
 
         form = self.form_class()
 
@@ -110,4 +112,3 @@ class ChangeMessage(LoginRequiredMixin, View):
             message.save()
 
         return redirect('chat', pk=message.chat_id)
-

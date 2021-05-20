@@ -37,6 +37,9 @@
         {% block content %}
             {% for message in messages %}
                 <a href="{% url 'chat' message.chat.id %}">
+                    {% if message.unread %}
+                        {{ message.unread__count }} new
+                    {% endif%}
                     {% for user in message.chat.members.all %}
                         {% if user != request.user %}
                             <p>User: {{ user }}</p>
