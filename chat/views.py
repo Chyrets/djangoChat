@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.db.models import Count
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
@@ -38,9 +39,9 @@ class DirectView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
-class ChatView(LoginRequiredMixin, View):
+class DialogView(LoginRequiredMixin, View):
     """
-    Display chat with some user
+    Display dialog with some user
     """
     form_class = MessageForm
     template_name = 'chat/direct.html'
@@ -48,6 +49,7 @@ class ChatView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         user = request.user
         messages = Message.objects.filter(chat_id=pk, chat__members=user, deleted=False).exclude(deleted_for_user=user)
+        chat = Chat.objects.get(id=pk)
 
         for message in messages:
             if message.author != user:
@@ -55,23 +57,36 @@ class ChatView(LoginRequiredMixin, View):
                 message.save()
 
         form = self.form_class()
+        users = User.objects.exclude(username=user)
 
         context = {
             'messages': messages,
-            'form': form
+            'form': form,
+            'users': users,
+            'chat': chat
         }
 
         return render(request, self.template_name, context)
 
     def post(self, request, pk, *args, **kwargs):
         form = self.form_class(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.chat_id = pk
-            message.author = request.user
-            if request.POST.get('parent', None):
-                message.parent_id = int(request.POST.get('parent'))
-            message.save()
+        chat = Chat.objects.get(id=pk)
+        user = request.user
+
+        if 'send' in request.POST:
+            if form.is_valid():
+                message = form.save(commit=False)
+                message.chat_id = pk
+                message.author = user
+                if request.POST.get('parent', None):
+                    message.parent_id = int(request.POST.get('parent'))
+                message.save()
+
+        if chat.type == chat.CHAT and chat.admin == user:
+            if 'add' in request.POST:
+                chat.members.add(*request.POST.getlist('members'))
+            elif 'delete' in request.POST:
+                chat.members.remove(*request.POST.getlist('members'))
 
         return redirect(reverse('chat', args=pk))
 
@@ -118,17 +133,29 @@ class ChangeMessage(LoginRequiredMixin, View):
         return redirect('chat', pk=message.chat_id)
 
 
-class StartChat(LoginRequiredMixin, View):
+class StartDialog(LoginRequiredMixin, View):
     """
-    Start chat with some user
+    Start dialog with some user
     """
 
     def get(self, request, user_id):
-        chat = Chat.objects.filter(members__in=[request.user.pk, int(user_id)], type=Chat.DIALOG).annotate(c=Count('members')).filter(c=2)
+        chat = Chat.objects.filter(members__in=[request.user.pk, int(user_id)], type=Chat.DIALOG).annotate(
+            c=Count('members')).filter(c=2)
         if chat.count() == 0:
             chat = Chat.objects.create()
             chat.members.add(request.user)
             chat.members.add(user_id)
         else:
             chat = chat.first()
+        return redirect('chat', chat.pk)
+
+
+class StartChat(LoginRequiredMixin, View):
+    """
+    Start chat with several user
+    """
+
+    def get(self, request):
+        chat = Chat.objects.create(admin=request.user, type=Chat.CHAT)
+        chat.members.add(request.user)
         return redirect('chat', chat.pk)

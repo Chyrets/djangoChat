@@ -11,6 +11,21 @@
     <br><br>
 
     <div>
+        {% if chat.type == chat.CHAT and chat.admin == request.user %}
+            <form action="" method="post">
+                {% csrf_token %}
+                <label for="">Members: </label>
+                <select name="members" id="" multiple>
+                    {% for user in users %}
+                        <option value="{{ user.pk }}" {% if user in chat.members.all %}
+                                selected {% endif %}>{{ user }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="add">add</button>
+                <button type="submit" name="delete">delete</button>
+            </form>
+        {% endif %}
+
         {% for message in messages %}
             {% if message.parent %}
                 Replied to: {{ message.parent }}
@@ -28,15 +43,15 @@
             <p>
                 {% if message.author == request.user %}
                     <a href="{% url 'change' message.pk %}">Change</a>
+                    <form action="{% url 'delete' message.pk 0 %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Delete for you</button>
+                    </form>
+                    <form action="{% url 'delete' message.pk 1 %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Delete for everyone</button>
+                    </form>
                 {% endif %}
-            <form action="{% url 'delete' message.pk 0 %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Delete for you</button>
-            </form>
-            <form action="{% url 'delete' message.pk 1 %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Delete for everyone</button>
-            </form>
             </p>
             <hr>
         {% endfor %}
@@ -46,7 +61,7 @@
             {% csrf_token %}
             <input type="hidden" name="parent" id="contactparent" value="">
             {{ form }}
-            <button type="submit">send</button>
+            <button type="submit" name="send">send</button>
         </form>
     </div>
     <script>

@@ -14,6 +14,7 @@ class Chat(models.Model):
     )
     type = models.CharField(max_length=1, choices=CHAT_TYPE_CHOICES)
     members = models.ManyToManyField(User)
+    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dialog_admin', null=True, blank=True)
 
 
 class Message(models.Model):
