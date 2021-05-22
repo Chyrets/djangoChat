@@ -39,20 +39,16 @@
 
         {% block content %}
             {% for message in messages %}
-                <a href="{% url 'chat' message.chat.id %}">
-                    {% if message.unread and message.author != request.user %}
-                        {{ message.unread__count }} new
-                    {% endif%}
-                    {% for user in message.chat.members.all %}
-                        {% if user != request.user %}
-                            <p>User: {{ user }}</p>
-                            <p>
-                                Last message: {{ message }}
-                                <small>{{ message.date }}</small>
-                            </p>
-                            <hr>
-                        {% endif %}
-                    {% endfor %}
+                <a href="{% url 'chat' message.chat %}">
+                    {% if message.unread and message.last_message.author != request.user %}
+                        {{ message.unread }} new
+                    {% endif %}
+                        <p>User: {{ message.last_message.author }}</p>
+                        <p>
+                            Last message: <strong>{{ message.last_message }}</strong>
+                            <small>{{ message.last_message.date }}</small>
+                        </p>
+                        <hr>
                 </a>
             {% endfor %}
 

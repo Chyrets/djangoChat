@@ -22,14 +22,16 @@ class DirectView(LoginRequiredMixin, View):
         messages = []
         for chat in chats:
             try:
-                messages.append(
-                    Message.objects.filter(
-                        chat=chat, deleted=False
-                    ).exclude(deleted_for_user=request.user).annotate(Count('unread')).latest('date'))
+                messages.append({
+                    'last_message': chat.message_set.filter(deleted=False).exclude(
+                        deleted_for_user=request.user).latest('date'),
+                    'unread': chat.message_set.filter(unread=True).count(),
+                    'chat': chat.pk
+                })
             except Message.DoesNotExist:
                 continue
 
-        messages = sorted(messages, key=lambda message: message.date, reverse=True)
+        messages = sorted(messages, key=lambda message: message['last_message'].date, reverse=True)
 
         context = {
             'chats': chats,

@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView
 from django.views.generic import CreateView
 
 from authy.forms import UserSignupForm
