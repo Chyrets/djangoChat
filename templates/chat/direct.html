@@ -36,6 +36,7 @@
                 {% if message.changed == True %}
                     <small>changed</small>
                 {% endif %}
+                <a href="{% url 'forward' message.pk %}">forward</a>
             </p>
             <a href="#formMessage" onclick="Reply('{{ message.id }}')">
                 Reply

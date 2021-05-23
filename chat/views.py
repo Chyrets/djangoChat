@@ -161,3 +161,30 @@ class StartChat(LoginRequiredMixin, View):
         chat = Chat.objects.create(admin=request.user, type=Chat.CHAT)
         chat.members.add(request.user)
         return redirect('chat', chat.pk)
+
+
+class ForwardMessage(LoginRequiredMixin, View):
+    """
+    Forward message from one chat to another
+    """
+    form_class = MessageForm
+
+    def get(self, request, message_id, *args, **kwargs):
+        chats = Chat.objects.all()
+        return render(request, 'chat/forward.html', {'chats': chats})
+
+    def post(self, request, message_id, *args, **kwargs):
+        user = request.user
+        chat_id = request.POST.get('chats')
+
+        if 'forward' in request.POST:
+            Message.objects.create(
+                chat=Chat.objects.get(id=chat_id),
+                author=user,
+                parent=Message.objects.get(pk=message_id),
+                message='forward message'
+            )
+
+        print(chat_id)
+
+        return redirect('chat', chat_id)

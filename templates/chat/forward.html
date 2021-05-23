@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <form action="" method="post">
+        {% csrf_token %}
+        <label for="">Chats: </label>
+        <select name="chats" id="">
+            {% for chat in chats %}
+                <option value="{{ chat.pk }}">{{ chat }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="forward">Forward</button>
+    </form>
+
+{% endblock %}
